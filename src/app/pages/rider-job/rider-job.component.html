@@ -1,0 +1,57 @@
+<div class="phone-frame">
+  <div class="screen">
+    <header class="topbar">
+      <div class="topbar-title">รายละเอียดใบงาน</div>
+      @if (job()) {
+        <button class="btn btn-secondary" type="button" (click)="logout()">เปลี่ยนใบงาน</button>
+      }
+    </header>
+
+    <div class="body">
+      @if (!job()) {
+        <div class="code-box">
+          <label for="jobCode">รหัสใบงาน</label>
+          <input
+            id="jobCode"
+            type="text"
+            placeholder="กรอกรหัสใบงานที่ร้านให้"
+            autocapitalize="characters"
+            [value]="codeInput()"
+            (input)="onInput($event)"
+            (keyup.enter)="submit()"
+            [disabled]="loading()"
+          />
+          @if (error()) { <p class="error">{{ error() }}</p> }
+          <button class="btn btn-primary" type="button" (click)="submit()" [disabled]="loading()">
+            {{ loading() ? 'กำลังตรวจสอบ...' : 'เปิดใบงาน' }}
+          </button>
+        </div>
+      }
+
+      @if (job(); as j) {
+        <div class="job-summary">
+          <div class="job-code">{{ j.job_code }}</div>
+          <div class="job-boxes">{{ j.total_boxes }} กล่อง</div>
+          <div class="job-pickup">{{ j.distance_km }} กม. · ประมาณ {{ j.duration_min }} นาที</div>
+        </div>
+
+        <div class="section-title">ลำดับจุดส่ง · {{ j.total_orders }} ออเดอร์</div>
+
+        @for (s of j.stops; track s.order_id) {
+          <div class="point-card">
+            <div class="point-num">{{ s.stop_seq }}</div>
+            <div class="point-body">
+              <div class="point-name">{{ s.customer_name }}</div>
+              <div class="point-box">{{ s.qty }} กล่อง</div>
+              <div class="point-phone">☎ {{ s.phone }}</div>
+            </div>
+          </div>
+        }
+
+        @if (j.stops.length) {
+          <a class="btn btn-primary start-btn" routerLink="/navigate">เริ่มงาน · เปิดเส้นทาง</a>
+        }
+      }
+    </div>
+  </div>
+</div>

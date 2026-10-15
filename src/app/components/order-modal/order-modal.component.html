@@ -1,0 +1,49 @@
+<div class="modal-overlay" (click)="onOverlayClick($event)">
+  <div class="modal">
+    <h2>เพิ่มออเดอร์</h2>
+    <p class="sub">เพิ่มออเดอร์เข้ารอบส่งด่วนมื้อเที่ยง</p>
+
+    <div class="field">
+      <label for="customer">ลูกค้า *</label>
+      <select id="customer" (change)="onCustomerChange($event)">
+        <option value="" disabled [selected]="customerId() === null">เลือกลูกค้า</option>
+        @for (c of customers(); track c.customer_id) {
+          <option [value]="c.customer_id" [selected]="customerId() === c.customer_id">
+            {{ c.name }}
+          </option>
+        }
+      </select>
+    </div>
+
+    <div class="field">
+      <label for="qty">จำนวนกล่อง *</label>
+      <input
+        id="qty"
+        type="number"
+        [min]="minQty"
+        [max]="maxQty"
+        [value]="qty()"
+        (input)="onQtyInput($event)"
+        placeholder="เลือกได้ {{ minQty }}-{{ maxQty }} กล่อง"
+      />
+    </div>
+
+    <div class="price-box">
+      <div class="hint">{{ qty() }} กล่อง × {{ pricePerBox }} บาท</div>
+      <div class="price-total">{{ isQtyValid() ? totalPrice() : 0 }} บาท</div>
+    </div>
+
+    @if (errorMsg()) {
+      <p class="error">{{ errorMsg() }}</p>
+    }
+
+    <div class="modal-actions">
+      <button class="btn btn-secondary" type="button" (click)="close()" [disabled]="isSaving()">
+        ยกเลิก
+      </button>
+      <button class="btn btn-primary" type="button" (click)="submit()" [disabled]="!canSubmit()">
+        {{ isSaving() ? 'กำลังบันทึก...' : 'เพิ่มออเดอร์' }}
+      </button>
+    </div>
+  </div>
+</div>

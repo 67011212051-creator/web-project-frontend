@@ -1,0 +1,147 @@
+import { Component, OnInit, inject, signal, computed } from '@angular/core';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { lastValueFrom, forkJoin } from 'rxjs';
+import { getOrdersResponse } from '../../../../models/get-orders-res';
+import { getCustomersResponse } from '../../../../models/get-customers-res';
+import { environment } from '../../../environments/environment';
+import { OrderModalComponent } from '../../components/order-modal/order-modal.component';
+import { SimulateOrderModalComponent } from '../../components/simulate-order-modal/simulate-order-modal.component';
+import { EditOrderDialogComponent } from '../../components/edit-order-dialog/edit-order-dialog.component';
+
+export interface OrderWithItems extends getOrdersResponse {
+  customer?: getCustomersResponse;
+}
+
+@Component({
+  selector: 'app-orders',
+  standalone: true,
+  imports: [OrderModalComponent, SimulateOrderModalComponent, EditOrderDialogComponent],
+  templateUrl: './orders.component.html',
+  styleUrl: './orders.component.css',
+})
+export class OrdersComponent implements OnInit {
+  private http = inject(HttpClient);
+  showSimulate = signal(false);
+  editingOrder = signal<OrderWithItems | null>(null);
+
+  orders = signal<OrderWithItems[]>([]);
+  customers = signal<getCustomersResponse[]>([]);
+  showModal = signal(false);
+  totalQty = computed(() =>
+    this.orders().reduce((sum, order) => sum + order.qty, 0)
+  );
+
+  qtyByCustomer = computed(() => {
+    const map = new Map<number, number>();
+    for (const o of this.orders()) {
+      map.set(o.customer_id, (map.get(o.customer_id) ?? 0) + o.qty);
+    }
+    return map;
+  });
+
+  avgQty = computed(() => {
+    const count = this.orders().length;
+    return count ? this.totalQty() / count : 0;
+  });
+
+  ngOnInit() {
+    this.callApi();
+  }
+
+  async callApi() {
+    try {
+      const [ordersData, customersData] = await lastValueFrom(
+        forkJoin([
+          this.http.get<getOrdersResponse[]>(`${environment.apiUrl}/orders`),
+          this.http.get<getCustomersResponse[]>(`${environment.apiUrl}/customers`),
+        ])
+      );
+
+      const combinedData: OrderWithItems[] = ordersData.map((order) => {
+        const customer = customersData.find(
+          (c) => c.customer_id === order.customer_id
+        );
+
+        return {
+          ...order,
+          customer: customer,
+        };
+      });
+
+      this.customers.set(customersData);
+      this.orders.set(combinedData);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  }
+
+  openEdit(order: OrderWithItems) {
+    this.editingOrder.set(order);
+  }
+
+  onOrderEdited() {
+    this.editingOrder.set(null);
+    this.callApi();
+  }
+
+  openSimulate() {
+    this.showSimulate.set(true);
+  }
+
+  onSimulated() {
+    this.showSimulate.set(false);
+    this.callApi(); // โหลดออเดอร์ใหม่หลังจำลองเสร็จ
+  }
+
+  openModal() {
+    this.showModal.set(true);
+  }
+
+  onOrderSaved() {
+    this.showModal.set(false);
+    this.callApi();
+  }
+
+  deleteOrder(id: number) {
+    if (!window.confirm(`ลบออเดอร์ ${id} หรือไม่?`)) {
+      return;
+    }
+
+    lastValueFrom(
+      this.http.delete<{ order_id: number }>(`${environment.apiUrl}/orders/delete/${id}`)
+    )
+      .then(() => {
+        this.orders.update((orders) => orders.filter((order) => order.order_id !== id));
+      })
+      .catch((error: unknown) => {
+        if (error instanceof HttpErrorResponse) {
+          console.error('Error deleting order:', {
+            status: error.status,
+            message: error.message,
+            response: error.error,
+          });
+          const message = error.error?.error ?? `ลบออเดอร์ไม่สำเร็จ (HTTP ${error.status})`;
+          window.alert(message);
+          return;
+        }
+
+        console.error('Error deleting order:', error);
+        window.alert('ลบออเดอร์ไม่สำเร็จ');
+      });
+  }
+
+  customersForAdd = computed(() => {
+    const used = new Set(this.orders().map((o) => o.customer_id));
+    return this.customers().filter((c) => !used.has(c.customer_id));
+  });
+  
+  customersForEdit = computed(() => {
+    const editing = this.editingOrder();
+    const used = new Set(
+      this.orders()
+        .filter((o) => o.order_id !== editing?.order_id)
+        .map((o) => o.customer_id)
+    );
+    return this.customers().filter((c) => !used.has(c.customer_id));
+  });
+}

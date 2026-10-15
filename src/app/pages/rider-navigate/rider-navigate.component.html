@@ -1,0 +1,37 @@
+<div class="nav-page">
+  <header class="nav-top">
+    <a class="nav-back" routerLink="/rider">‹ ใบงาน</a>
+    <div class="nav-count">จุดที่ {{ index() + 1 }} / {{ total() }}</div>
+  </header>
+
+  <!-- แผนที่ต้องอยู่ใน DOM ตลอด ห้ามครอบด้วย @if -->
+  <div class="nav-map" #mapEl></div>
+
+  <section class="nav-sheet">
+  @if (finished()) {
+    <div class="done">
+      <div class="done-icon">✓</div>
+      <h2>ส่งครบทุกจุดแล้ว</h2>
+      <a class="btn btn-primary" routerLink="/rider">กลับไปดูใบงาน</a>
+    </div>
+  } @else {
+    @if (stop(); as s) {
+      <div class="dots">
+        @for (n of dotsArray(); track $index) {
+          <span class="dot" [class.on]="$index <= index()"></span>
+        }
+      </div>
+
+      <div class="dest-name">{{ s.customer_name }}</div>
+      <div class="dest-meta">
+        <span class="badge">{{ s.qty }} กล่อง</span>
+        <span>{{ s.distance_km }} กม. จากจุดก่อนหน้า</span>
+      </div>
+
+      <button class="btn btn-primary arrive-btn" type="button" (click)="arrive()">
+        ถึงจุดส่งแล้ว
+      </button>
+    }
+  }
+</section>
+</div>

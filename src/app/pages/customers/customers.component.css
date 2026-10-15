@@ -1,0 +1,68 @@
+.page {
+  padding: 28px 32px;
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+.page-header h1 { font-size: 24px; }
+.sub { color: var(--color-text-muted); font-size: 13px; margin-top: 4px; }
+
+/* min-width: 0 สำคัญ ไม่งั้นแผนที่ดัน grid ให้กว้างเกินและ Leaflet คำนวณผิด */
+.content-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
+  gap: 20px;
+  align-items: start;
+}
+
+.table-card { padding: 20px; min-width: 0; }
+
+.table-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+  font-weight: 600;
+}
+.table-header input { max-width: 260px; }
+
+table { width: 100%; border-collapse: collapse; }
+th {
+  text-align: left;
+  font-size: 12px;
+  color: var(--color-text-muted);
+  padding: 10px 8px;
+  border-bottom: 1px solid var(--color-border);
+}
+td {
+  padding: 12px 8px;
+  border-bottom: 1px solid var(--color-border);
+}
+.actions { white-space: nowrap; }
+
+.map-card {
+  min-width: 0;
+  padding: 12px;
+  overflow: hidden;
+}
+
+/* ต้องมีความสูงชัดเจน และห้ามใส่ transform / overflow ที่นี่ */
+.map-area {
+  height: 420px;
+  width: 100%;
+  border-radius: 10px;
+  position: relative;
+  z-index: 0;
+}
+
+.map-footer { padding: 14px 6px 4px; font-weight: 600; }
+
+.mono {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}

@@ -1,0 +1,83 @@
+<div class="page">
+  <header class="page-header">
+    <div class="header-title">
+      <h1>จัดการออเดอร์</h1>
+      <p class="sub">ออเดอร์รอบส่งด่วนมื้อเที่ยง · ปิดรับ 11:30 น.</p>
+    </div>
+
+    <div class="header-actions">
+      <button class="btn btn-secondary" type="button" (click)="openSimulate()">จำลองการสั่ง</button>
+      <button class="btn btn-primary" type="button" (click)="openModal()">
+        + เพิ่มออเดอร์
+      </button>
+    </div>
+  </header>
+
+  <div class="stats-row">
+    <div class="card stat-card highlight">
+      <div class="stat-label">ออเดอร์ทั้งหมด</div>
+      <div class="stat-value">{{ orders().length }} ออเดอร์</div>
+    </div>
+
+    <div class="card stat-card">
+      <div class="stat-label">จำนวนกล่องรวม</div>
+      <div class="stat-value">{{ totalQty() }} กล่อง</div>
+      <div class="stat-hint">เฉลี่ย {{ avgQty().toFixed(1) }} กล่อง/ออเดอร์</div>
+    </div>
+  </div>
+
+  <div class="card table-card">
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th>เลขออเดอร์</th>
+            <th>ชื่อลูกค้า</th>
+            <th>จำนวนกล่อง</th>
+            <th class="col-actions">จัดการ</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          @for (item of orders(); track item.order_id) {
+          <tr>
+            <td class="mono" data-label="เลขออเดอร์">{{ item.order_id }}</td>
+            <td data-label="ชื่อลูกค้า">{{ item.customer?.name }}</td>
+            <td data-label="จำนวนกล่อง">
+              {{ item.qty || 0 }} กล่อง
+            </td>
+            <td class="actions" data-label="จัดการ">
+              <button class="btn-icon" type="button" aria-label="แก้ไข" (click)="openEdit(item)">
+                แก้ไข
+              </button>
+              <button class="btn-icon-danger" type="button" aria-label="ลบ" (click)="deleteOrder(item.order_id)">
+                ลบ
+              </button>
+            </td>
+          </tr>
+          } @empty {
+          <tr class="empty-row">
+            <td colspan="4">ไม่พบข้อมูลออเดอร์</td>
+          </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  @if (showModal()) {
+  <app-order-modal [customers]="customersForAdd()" (closed)="showModal.set(false)" (saved)="onOrderSaved()" />
+
+
+  }
+
+  @if (showSimulate()) {
+  <app-simulate-order-modal [customers]="customers()" [existingOrders]="orders()" (closed)="showSimulate.set(false)"
+    (started)="onSimulated()" />
+  }
+
+  @if (editingOrder(); as order) {
+  <app-edit-order-dialog [order]="order" [customers]="customersForEdit()" (closed)="editingOrder.set(null)"
+    (saved)="onOrderEdited()" />
+  }
+</div>

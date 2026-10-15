@@ -1,0 +1,87 @@
+<div class="backdrop" (click)="close.emit()"></div>
+
+<section
+  class="dialog"
+  role="dialog"
+  aria-modal="true"
+  aria-labelledby="edit-customer-title"
+>
+  <header class="dialog-header">
+    <div>
+      <h2 id="edit-customer-title">แก้ไขข้อมูลลูกค้า</h2>
+      <p class="sub mono">ไอดี {{ customer.customer_id }}</p>
+    </div>
+
+    <button class="btn-close" type="button" aria-label="ปิด" (click)="close.emit()">
+      ✕
+    </button>
+  </header>
+
+  <form class="dialog-body" (submit)="$event.preventDefault(); onSave()">
+    <div class="field">
+      <label for="name">ชื่อ-นามสกุล</label>
+      <input
+        id="name"
+        type="text"
+        [ngModel]="name()"
+        (ngModelChange)="name.set($event)"
+        name="name"
+        placeholder="เช่น สมชาย ใจดี"
+      />
+    </div>
+
+    <div class="field">
+      <label for="phone">เบอร์โทร</label>
+      <input
+        id="phone"
+        type="tel"
+        inputmode="numeric"
+        [ngModel]="phone()"
+        (ngModelChange)="phone.set($event)"
+        name="phone"
+        placeholder="เช่น 081-234-5601"
+      />
+    </div>
+
+    <div class="field-row">
+      <div class="field">
+        <label for="latitude">ละติจูด</label>
+        <input
+          id="latitude"
+          type="number"
+          step="any"
+          [ngModel]="latitude()"
+          (ngModelChange)="latitude.set($event)"
+          name="latitude"
+          placeholder="16.2478"
+        />
+      </div>
+
+      <div class="field">
+        <label for="longitude">ลองจิจูด</label>
+        <input
+          id="longitude"
+          type="number"
+          step="any"
+          [ngModel]="longitude()"
+          (ngModelChange)="longitude.set($event)"
+          name="longitude"
+          placeholder="103.2512"
+        />
+      </div>
+    </div>
+
+    @if (errorMsg()) {
+    <div class="error">{{ errorMsg() }}</div>
+    }
+
+    <footer class="dialog-footer">
+      <button class="btn btn-secondary" type="button" (click)="close.emit()">
+        ยกเลิก
+      </button>
+      <button class="btn btn-primary" type="submit" [disabled]="saving()">
+        {{ saving() ? 'กำลังบันทึก...' : 'บันทึกการแก้ไข' }}
+      </button>
+    </footer>
+  </form>
+</section>
